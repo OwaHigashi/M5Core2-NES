@@ -24,7 +24,7 @@ This will present three slider toggles on the screen. They allow you to turn on 
 
 In the monitor output, we can see everything being initialised:
 
-<img alt="debug output" src="readme_assets/debug-output.png" width = 75%>
+<img alt="debug output" src="readme_assets/debug-output.png" width = 90%>
 
 &nbsp;
 
