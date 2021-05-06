@@ -1,146 +1,121 @@
-Basic M5Stack Core2 Example
-===========================
+# M5Core2 with LVGL and I2C Manager
 
-This repository is intended as a straightforward example or base project for
-using the M5Stack Core2 with ESP-IDF directly in C - i.e. No Arduino.
 
-Because it's intended as an example to learn and copy-paste from, the code
-favors simplicity and "obviousness" over clean abstractions and good practice.
-It exists only to provide a minimum-viable reference for how to bring up the
-board in ESP-IDF.
+> **Repository Status**
 
-Functionality
--------------
+> I found a repository named `m5core2-basic-idf` by Brian Starkey (@usedbytes) [here](https://github.com/usedbytes/m5core2-basic-idf). It did the same thing this repository does, but in a quick-hack demonstration kind of way. I want to program the M5Core2 device for real, so I took it upon myself to take over where he left it and make things as comfortable and clean as I could make them.
 
-At present, a subset of the board's features are supported:
+> The original version uses differently modified `lvgl_esp_drivers` and `axp192` components and was using Mika Tuupola's [I2C Helper](https://github.com/tuupola/esp_i2c_helper) but with the older version of Mika's I2C HAL API. I wrote my own [I2C Manager](https://github.com/ropg/i2c_manager) which is compatible but thread-safe (and integrated it into `lvgl_esp_drivers`).
 
-- AXP192 PMIC
-  - Voltage rail adjustment, enable/disable
-  - Configure charger(s)
-  - Read battery voltage
-  - GPIOs
-  - etc...
-- LED control
-  - via AXP192 `GPIO1`
-- Vibration motor control
-  - via AXP192 `LDO3`
-- LCD backlight control
-  - via AXP192 `DCDC3`
-- 5 V "Bus"/Grove power control
-  - via AXP192 `EXTEN` / `N_VBUSEN`
-- LCD and Touchscreen
-  - GUI supported using `lvgl` and `lvgl_esp32_drivers`
+&nbsp;
 
-"Out of the box", it will boot to a simple GUI where you can toggle the LED,
-vibration motor, and 5 V bus power on and off.
+The original repository is intended as a straightforward example or base project for
+using the M5Stack Core2 with ESP-IDF directly in C - i.e. No Arduino. This adds a number of components to make programming the M5Core2 easy using ESP-IDF. This now serves as much as a demo for how to get things working on an M5Stack Core2 device a it is a demo for the capabilities of the I2C Manager component that I wrote and the modifications to the lvgl\_esp\_drivers component.
 
-![Screenshot - see "Known Issues" wrt. CPU usage](screenshot.jpg)
+Enjoy!
 
-Building
---------
+&nbsp;
 
-This project builds using ESP-IDF. I have been building it with a random git
-snapshot of ESP-IDF from mid 2020. Specifically, the version is reported as:
+## Functionality
 
-```
-ESP-IDF v4.2-dev-1099-g38102d0e4
-```
+This will present three slider toggles on the screen. They allow you to turn on or off the LED, the vibrator motor and the power to the external 5V bus. It thus demonstrates the use of the LVGL graphics library as well as initialization and control over the AXP192 power management chip
 
-I believe it should work with any v4 version (where `idf.py` is used instead of
-`make`), but I will be happy to receive pull requests to fix the build if there
-are any issues.
+![Screenshot - see "Known Issues" wrt. CPU usage](readme_assets/screenshot.jpg)
 
-To build it, in a shell where you have already set up ESP-IDF (i.e. have sourced
-`export.sh`):
+In the monitor output, we can see everything being initialised:
+
+<img alt="debug output" src="readme_assets/debug-output.png" width = 75%>
+
+&nbsp;
+
+## Building
+
+This project builds without any further configuration using ESP-IDF and was tested with ESP-IDF versions 4.1, 4.2 and 4.3. There is no reason it shouldn't build with 3.x, but I haven't tested that. (Please file an issue to let me know.)
+
 
 ```
 # Clone the repository, and its submodules
-git clone https://github.com/usedbytes/m5core2-basic-idf.git
-cd m5core2-basic-idf
+git clone https://github.com/ropg/m5core2_esp-idf_demo.git
+cd m5core2_esp-idf_demo
 git submodule update --init --recursive
 
 # Build it, flash it, and see the serial output
 idf.py build flash monitor
 ```
 
-The `sdkconfig` is set up for the M5Core2, and so it should work out-of-the box.
+If at any time you want to start over (also removing any settings you may have changed in menuconfig) simply do:
 
-External Dependencies
----------------------
+```
+idf.py fullclean
+rm sdkconfig
+idf.py build flash monitor
+```
 
-To provide drivers for the different devices, this project pulls in a few
-external components as sub-modules. I have had to make adjustments to most of
-them to make them work with this board. Some would be suitable for upstreaming,
-others are quick hacks.
 
-### `components/esp_i2c_hal`
+&nbsp;
 
-This provides a dead simple i2c abstraction, which is used by the AXP192 driver.
+## External Dependencies
 
-- Upstream: `https://github.com/tuupola/esp_i2c_hal`
-- Downstream: `https://github.com/usedbytes/esp_i2c_hal`
+All the components in this project are submodules that have their own github repository. Most are hosted by me because I wrote them or because the code depends on modifications I made to other people's code. Where I did the latter, the changes are made as 'cleanly' as I am able, and I hope the maintainers of the upstream repositories will adopt these changes.
 
-#### Modifications:
-- Not using the most recent upstream version, which changed the API in a
-  non-backwards compatible way, and I didn't update my `axp192` fork to support
-  it yet
-- Switch the i2c bus to `0`. Needed to match the (non-configurable)
-  `lvgl_esp_drivers` bus.
+&nbsp;
 
-### `components/axp192`
+### ▶ [`components/i2c_manager`](https://github.com/ropg/i2c_manager)
 
-Driver for the AXP192 PMIC.
+The I2C manager provides thread-safe I2C for any component that needs it. It can be used directly as a dependency, built-in into another component as well as via a Mika Tuupola-compatible HAL API.
 
-- Upstream: `https://github.com/tuupola/axp192`
-- Downstream: `https://github.com/usedbytes/axp192`
+[More information](https://github.com/ropg/i2c_manager)
 
-#### Modifications:
-- Not using the "init commands" functionality from upstream, which isn't
-  very flexible
-- Ignoring most of the Kconfig support, which is a bit cumbersome
-- Add voltage rail configuration and direct register access
-- Add IRQ handling (though not used in this project! See also
-  [my T-Beam project](https://github.com/usedbytes/tbeam). The IRQ pin isn't
-  wired up on the M5Core2 board.
+&nbsp;
 
-### `components/lvgl`
+### ▶ [`components/axp192`](https://github.com/ropg/axp192)
+
+Driver for the AXP192 Power Management IC.
+
+[My modified version](https://github.com/ropg/axp192) is based on the [original version](https://github.com/tuupola/axp192) by Mika Tuupola (@tuupola). Then Brian Starkey (@usedbytes) made some [modifications](https://github.com/usedbytes/axp192) I really liked, but he based it on an older version of Mika's API. So I reapplied his changes, plus a function of my own to twiddle individual bits in a register with a single function call.
+
+&nbsp;
+
+### ▶ [`components/m5core2_axp192`](https://github.com/ropg/m5core2_axp192)
+
+I wrote [this component](https://github.com/ropg/m5core2_axp192) to offer the initialisation routine and some service functions for the things attached to the axp192 Power Management IC in the M5Core2. It depends on the `axp19` and `i2c_manager` components above. This allows you to turn the LED, the vibrator, the audio amplifier and the external power on and off. See the link for more details. More functionality might be added later.
+
+&nbsp;
+
+### ▶ [`components/lvgl`](https://github.com/lvgl/lvgl)
 
 [Light and Versatile Graphics Library](https://lvgl.io/)
 
-- Upstream: `https://github.com/lvgl/lvgl`
+This is not modified and taken from [their own repository](https://github.com/lvgl/lvgl).
 
-#### Modifications:
-- None!
+&nbsp;
 
-### `components/lvgl_esp32_drivers`
+### ▶ [`components/lvgl_esp32_drivers`](https://github.com/ropg/lvgl_esp32_drivers)
 
-Drivers for common ESP32 LCD and touch controllers, for use with LVGL.
-See "known issues".
+I did a lot of work modifying this one:
 
-- Upstream: `https://github.com/lvgl/lvgl_esp32_drivers`
-- Downstream: `https://github.com/usedbytes/lvgl_esp32_drivers`
+* I redid a modification by Brian Starkey (@usedbytes) that adds an option to menuconfig (`LV_DISP_USE_RST`) to not allocate a GPIO for display reset, implementing it across all display drivers. This helps people who have the rest line tied or have it hooked up to an external Power Management IC.
 
-#### Modifications:
-- Hack the correct screen orientation for M5Core2
-- Allow skipping LCD reset control (upstreamable)
-   - The reset pin isn't connected to the ESP32, it's connected to the AXP192.
+* I added support for the M5Core2 display.
 
-Known Issues
-------------
+* I reworked the I2C code (that had clearly evolved over time and wasn't all that tidy) to now be routed through a built-in copy of my I2C Manager. This makes things cleaner and it gives us the ability to synchronise thread-safe mutex-locking between it and the other components using the I2C Manager component. That is what enabled the line
 
-### PMIC / LCD initialisation
+	```c
+	lvgl_i2c_locking(i2c_manager_locking());
+	```
 
-The primary issue is that the `lvgl_esp32_drivers` implementation is very
-"opinionated", and almost everything is done via KConfig. That means that if
-your board isn't already supported, it's quite likely that you're going to
-have trouble supporting it cleanly.
+	in `main.c` to cause the line
 
-Also, it takes complete ownership of setting up the i2c and SPI buses, which
-doesn't gel well with the shared i2c bus of the M5Core2.
+	```
+	lvgl_i2c: Now following I2C Manager for locking.
+	```
 
-The main manifestation of this is related to the PMIC and LCD initialisation,
-which is a bit hacked. See the [comment above `lvgl_driver_init()` in main.c](main/main.c#L265)
-for more details.
+	in the monitor output. You can read about how I2C now works inside the LVGL drivers [here](https://github.com/ropg/lvgl_esp32_drivers/blob/I2C_Manager/i2c_manager/README.md) and see the different ways that I2C Manager can work with other components [here](https://github.com/ropg/i2c_manager).
+
+
+&nbsp;
+
+## Known Issues
 
 ### Apparent high CPU usage
 

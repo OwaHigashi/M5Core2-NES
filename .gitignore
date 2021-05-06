@@ -1,0 +1,9 @@
+
+/build/
+/sdkconfig
+/sdkconfig.old
+/config/*
+Makefile
+sdkconfig
+sdkconfig.ci
+.DS_Store
