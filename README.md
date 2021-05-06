@@ -86,7 +86,7 @@ I wrote [this component](https://github.com/ropg/m5core2_axp192) to offer the in
 
 [Light and Versatile Graphics Library](https://lvgl.io/)
 
-This is not modified and taken from [their own repository](https://github.com/lvgl/lvgl).
+This is not modified and taken from [their own repository](https://github.com/lvgl/lvgl). We're using release version 7, the master branch on their repository has moved to version 8.
 
 &nbsp;
 
