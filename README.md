@@ -68,17 +68,19 @@ The I2C manager provides thread-safe I2C for any component that needs it. It can
 
 &nbsp;
 
-### ▶ [`components/axp192`](https://github.com/ropg/axp192)
+### ▶ [`components/axp192`](https://github.com/tuupola/axp192)
 
 Driver for the AXP192 Power Management IC.
 
-[My modified version](https://github.com/ropg/axp192) is based on the [original version](https://github.com/tuupola/axp192) by Mika Tuupola (@tuupola). Then Brian Starkey (@usedbytes) made some [modifications](https://github.com/usedbytes/axp192) I really liked, but he based it on an older version of Mika's API. So I reapplied his changes, plus a function of my own to twiddle individual bits in a register with a single function call.
+This component does the low-level interfacing with the AXP192 Power management IC, courtesy of Mika Tuupola (@tuupola). The interaction between this component and m5core2\_axp192 shows how to use the Tuupola-style HAL feature of I2C Manager.
 
 &nbsp;
 
 ### ▶ [`components/m5core2_axp192`](https://github.com/ropg/m5core2_axp192)
 
-I wrote [this component](https://github.com/ropg/m5core2_axp192) to offer the initialisation routine and some service functions for the things attached to the axp192 Power Management IC in the M5Core2. It depends on the `axp19` and `i2c_manager` components above. This allows you to turn the LED, the vibrator, the audio amplifier and the external power on and off. See the link for more details. More functionality might be added later.
+I wrote [this component](https://github.com/ropg/m5core2_axp192) to offer the initialisation routine and some service functions for the things attached to the axp192 Power Management IC in the M5Core2. It depends on the `axp19` and `i2c_manager` components above. This allows you to turn the LED, the vibrator, the audio amplifier and the external power on and off. See the [README](https://github.com/ropg/m5core2_axp192) for more details. More functionality might be added later.
+
+> Some of the functionality was lifted from @usedbytes - Brian Starkey's [modification](https://github.com/usedbytes/axp192) of this component, but his mods were for a different version of Mika Tuupola's API, so instead of maintaining two modified versions of other people's components, I stuck what I needed in my component instead.
 
 &nbsp;
 
@@ -94,7 +96,7 @@ This is not modified and taken from [their own repository](https://github.com/lv
 
 I did a lot of work modifying this one:
 
-* I redid a modification by Brian Starkey (@usedbytes) that adds an option to menuconfig (`LV_DISP_USE_RST`) to not allocate a GPIO for display reset, implementing it across all display drivers. This helps people who have the rest line tied or have it hooked up to an external Power Management IC.
+* I redid a modification by Brian Starkey (@usedbytes) that adds an option to menuconfig (`LV_DISP_USE_RST`) to not allocate a GPIO for display reset, implementing it across all display drivers. This helps people who have the reset line tied or have it hooked up to an external Power Management IC.
 
 * I added support for the M5Core2 display.
 
@@ -110,7 +112,7 @@ I did a lot of work modifying this one:
 	lvgl_i2c: Now following I2C Manager for locking.
 	```
 
-	in the monitor output. You can read about how I2C now works inside the LVGL drivers [here](https://github.com/ropg/lvgl_esp32_drivers/blob/I2C_Manager/i2c_manager/README.md) and see the different ways that I2C Manager can work with other components [here](https://github.com/ropg/i2c_manager).
+	to appear in the monitor output. You can read about how I2C now works inside the LVGL drivers [here](https://github.com/ropg/lvgl_esp32_drivers/blob/I2C_Manager/i2c_manager/README.md) and see the different ways that I2C Manager can work with other components [here](https://github.com/ropg/i2c_manager).
 
 
 &nbsp;

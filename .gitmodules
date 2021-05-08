@@ -12,4 +12,4 @@
 	url = https://github.com/ropg/m5core2_axp192.git
 [submodule "components/axp192"]
 	path = components/axp192
-	url = https://github.com/ropg/axp192
+	url = https://github.com/tuupola/axp192
