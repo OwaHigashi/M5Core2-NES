@@ -1,9 +1,9 @@
 
 /build/
+/config/
+/.vscode/
 /sdkconfig
 /sdkconfig.old
-/config/*
+/sdkconfig.ci
 Makefile
-sdkconfig
-sdkconfig.ci
 .DS_Store
