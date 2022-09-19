@@ -6,7 +6,7 @@
 	url = https://github.com/ropg/i2c_manager
 [submodule "components/lvgl_esp32_drivers"]
 	path = components/lvgl_esp32_drivers
-	url = https://github.com/ropg/lvgl_esp32_drivers
+	url = https://github.com/HidetoKimura/lvgl_esp32_drivers.git
 [submodule "components/m5core2_axp192"]
 	path = components/m5core2_axp192
 	url = https://github.com/ropg/m5core2_axp192.git
