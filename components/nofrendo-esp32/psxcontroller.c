@@ -168,6 +168,8 @@ int psxReadInput() {
 	uint16_t retval = 0;
 	uint8_t key_value = 0xff;
 
+	#if 0 // TODO ENABLE 
+
 	if(gpio_get_level(5) == 0) {
 		key_value = i2c_keyboard_read();
 		printf("key is:0x%x \r\n", key_value);
@@ -222,6 +224,7 @@ int psxReadInput() {
 	} else {
 		retval = pre_retval;
 	}
+	#endif
 
 	pre_retval = retval;
 	return (int)retval;
@@ -231,10 +234,10 @@ int psxReadInput() {
 void psxcontrollerInit() {
 	printf("PSX controller disabled in menuconfig; no input enabled.\n");
 	
-	gpio_set_direction(5, GPIO_MODE_INPUT);
-	gpio_pullup_en(5);
+//	gpio_set_direction(5, GPIO_MODE_INPUT);
+//	gpio_pullup_en(5);
 
-	i2c_keyboard_master_init();
+//	i2c_keyboard_master_init();
 }
 
 #endif

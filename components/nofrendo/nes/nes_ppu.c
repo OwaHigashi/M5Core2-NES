@@ -704,6 +704,8 @@ static void ppu_renderbg(uint8 *vidbuf)
    /* draw a line of transparent background color if bg is disabled */
    if (false == ppu.bg_on)
    {
+//      printf("ppu_renderbg() : 1 vidbuf = %p \n", vidbuf);
+
       memset(vidbuf, FULLBG, NES_SCREEN_WIDTH);
       return;
    }
@@ -1012,6 +1014,9 @@ bool ppu_enabled(void)
 static void ppu_renderscanline(bitmap_t *bmp, int scanline, bool draw_flag)
 {
    uint8 *buf = bmp->line[scanline];
+
+   // for destroy memory
+   if( scanline > 223 ) return;
 
    /* start scanline - transfer ppu latch into vaddr */
    if (ppu.bg_on || ppu.obj_on)

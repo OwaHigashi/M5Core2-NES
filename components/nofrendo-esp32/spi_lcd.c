@@ -36,12 +36,15 @@
 #define PIN_NUM_MISO GPIO_NUM_38
 #define PIN_NUM_MOSI GPIO_NUM_23
 #define PIN_NUM_CLK  GPIO_NUM_18
-#define PIN_NUM_CS   GPIO_NUM_14
-#define PIN_NUM_DC   GPIO_NUM_27
-#define PIN_NUM_RST  GPIO_NUM_33
-#define PIN_NUM_BCKL GPIO_NUM_32
+#define PIN_NUM_CS   GPIO_NUM_5
+#define PIN_NUM_DC   GPIO_NUM_15
+//#define PIN_NUM_CS   GPIO_NUM_14
+//#define PIN_NUM_DC   GPIO_NUM_27
+//#define PIN_NUM_RST  GPIO_NUM_33
+//#define PIN_NUM_BCKL GPIO_NUM_32
 
-#define SPI_NUM  0x3
+//#define SPI_NUM  0x3
+#define SPI_NUM  0x2
 
 #define LCD_TYPE_ILI 0
 #define LCD_TYPE_ST 1
@@ -130,22 +133,24 @@ void lcd_init(spi_device_handle_t spi)
 {
     int cmd=0;
     const lcd_init_cmd_t* lcd_init_cmds;
-    gpio_set_direction(PIN_NUM_RST, GPIO_MODE_INPUT);
-    vTaskDelay(1 / portTICK_RATE_MS);
-    bool lcd_version = gpio_get_level(PIN_NUM_RST);
+//    gpio_set_direction(PIN_NUM_RST, GPIO_MODE_INPUT);
+//    vTaskDelay(1 / portTICK_RATE_MS);
+//    bool lcd_version = gpio_get_level(PIN_NUM_RST);
 
     //Initialize non-SPI GPIOs
     gpio_set_direction(PIN_NUM_DC, GPIO_MODE_OUTPUT);
-    gpio_set_direction(PIN_NUM_RST, GPIO_MODE_OUTPUT);
+//    gpio_set_direction(PIN_NUM_RST, GPIO_MODE_OUTPUT);
     // gpio_set_direction(PIN_NUM_BCKL, GPIO_MODE_OUTPUT);
     
     // gpio_set_direction(GPIO_NUM_25, GPIO_MODE_INPUT);
 
+#if 0
     //Reset the display
     gpio_set_level(PIN_NUM_RST, 0);
     vTaskDelay(100 / portTICK_RATE_MS);
     gpio_set_level(PIN_NUM_RST, 1);
     vTaskDelay(100 / portTICK_RATE_MS);
+#endif
 
     //detect LCD type
     // uint32_t lcd_id = lcd_get_id(spi);
@@ -169,7 +174,7 @@ void lcd_init(spi_device_handle_t spi)
         }
         cmd++;
     }
-    if(lcd_version) lcd_cmd(spi, 0x21);
+//    if(lcd_version) lcd_cmd(spi, 0x21);
     ///Enable backlight
     // gpio_set_level(PIN_NUM_BCKL, 1);
 }
@@ -198,13 +203,16 @@ void ili9341_spi_init()
         .spics_io_num=PIN_NUM_CS,               //CS pin
         .queue_size=7,                          //We want to be able to queue 7 transactions at a time
         .pre_cb=lcd_spi_pre_transfer_callback,  //Specify pre-transfer callback to handle D/C line
+        .flags = SPI_DEVICE_HALFDUPLEX | SPI_DEVICE_NO_DUMMY, 
     };
     //Initialize the SPI bus
-    ret=spi_bus_initialize(VSPI_HOST, &buscfg, 1);
+//    ret=spi_bus_initialize(VSPI_HOST, &buscfg, 1);
+    ret=spi_bus_initialize(SPI2_HOST, &buscfg, 1);
     // assert(ret==ESP_OK);
 
     //Attach the LCD to the SPI bus
-    ret=spi_bus_add_device(VSPI_HOST, &devcfg, &spi);
+ //   ret=spi_bus_add_device(VSPI_HOST, &devcfg, &spi);
+    ret=spi_bus_add_device(SPI2_HOST, &devcfg, &spi);
     // assert(ret==ESP_OK);
 
     //Initialize the LCD
@@ -228,6 +236,7 @@ void lcd_setBrightness(int duty) {
         .speed_mode = LEDC_HS_MODE,   // timer mode
         .timer_num = LEDC_HS_TIMER    // timer index
     };
+
     // Set configuration of timer0 for high speed channels
     ledc_timer_config(&ledc_timer);
     
@@ -322,5 +331,5 @@ void ili9341_nes_init()
 {
     ESP_LOGI("nes", "ili9341_nes_init()");
     ili9341_spi_init();
-    lcd_setBrightness(800);
+//    lcd_setBrightness(800);
 }

@@ -177,6 +177,12 @@ void osd_getvideoinfo(vidinfo_t *info)
    info->default_width = DEFAULT_WIDTH;
    info->default_height = DEFAULT_HEIGHT;
    info->driver = &sdlDriver;
+
+   printf("info->default_width = %d \n", info->default_width);
+   printf("info->default_height = %d \n", info->default_height);
+   printf("info->driver.name = %s \n", info->driver->name);
+
+
 }
 
 /* flip between full screen and windowed */
@@ -237,7 +243,7 @@ static bitmap_t *lock_write(void)
 /* release the resource */
 static void free_write(int num_dirties, rect_t *dirty_rects)
 {
-   bmp_destroy(&myBitmap);
+//   bmp_destroy(&myBitmap);
 }
 
 

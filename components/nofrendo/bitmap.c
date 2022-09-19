@@ -40,19 +40,26 @@ static bitmap_t *_make_bitmap(uint8 *data_addr, bool hw, int width,
    int i;
 
    /* quick safety check */
-   if (NULL == data_addr)
+   if (NULL == data_addr) {
+      printf("_make_bitmap(): data_addr NULL \n");
       return NULL;
+   }
 
    /* Make sure to add in space for line pointers */
    bitmap = malloc(sizeof(bitmap_t) + (sizeof(uint8 *) * height));
-   if (NULL == bitmap)
+   if (NULL == bitmap) {
+      printf("_make_bitmap(): fail malloc \n");
       return NULL;
+   }
 
    bitmap->hardware = hw;
    bitmap->height = height;
    bitmap->width = width;
    bitmap->data = data_addr;
    bitmap->pitch = pitch + (overdraw * 2);
+
+   printf("_make_bitmap(): bitmap->height = %d \n", height);
+   printf("_make_bitmap(): bitmap->width = %d \n", width);
 
    /* Set up line pointers */
    /* we want to make some 32-bit aligned adjustment
@@ -91,6 +98,7 @@ bitmap_t *bmp_create(int width, int height, int overdraw)
 /* allocate and initialize a hardware bitmap */
 bitmap_t *bmp_createhw(uint8 *addr, int width, int height, int pitch)
 {
+   printf("bmp_createhw()\n");
    return _make_bitmap(addr, true, width, height, pitch, 0); /* zero overdraw */
 }
 

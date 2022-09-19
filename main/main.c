@@ -162,6 +162,8 @@ void app_main(void)
 	
 	m5core2_init();
 
+//	lvgl_driver_init();
+
 #if 0
 	lvgl_i2c_locking(i2c_manager_locking());
 

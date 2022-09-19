@@ -365,14 +365,22 @@ void vid_flush(void)
 /* emulated machine tells us which resolution it wants */
 int vid_setmode(int width, int height)
 {
+   printf("vid_setmode() : 1 primary_buffer = %p \n", primary_buffer);
+
    if (NULL != primary_buffer)
+      printf("vid_setmode() : 2 primary_buffer = %p \n", primary_buffer);
       bmp_destroy(&primary_buffer);
 //   if (NULL != back_buffer)
 //      bmp_destroy(&back_buffer);
 
+   printf("vid_setmode() : 3 primary_buffer = %p \n", primary_buffer);
+
    primary_buffer = bmp_create(width, height, 0); /* no overdraw */
    if (NULL == primary_buffer)
+      printf("vid_setmode() : 4 primary_buffer = %p \n", primary_buffer);
       return -1;
+
+   printf("vid_setmode() : 5 primary_buffer = %p \n", primary_buffer);
 
    /* Create our backbuffer */
 #if 0
@@ -385,6 +393,8 @@ int vid_setmode(int width, int height)
    bmp_clear(back_buffer, GUI_BLACK);
 #endif
    bmp_clear(primary_buffer, GUI_BLACK);
+   
+   printf("vid_setmode() : 6 primary_buffer = %p \n", primary_buffer);
 
    return 0;
 }
@@ -400,8 +410,14 @@ static int vid_findmode(int width, int height, viddriver_t *osd_driver)
    /* we got our driver */
    driver = osd_driver;
 
+   log_printf("screen = %p \n", screen);
+
    /* re-assert dimensions, clear the surface */
    screen = driver->lock_write();
+
+   log_printf("screen = %p \n", screen);
+
+   log_printf("screen1 : %d x %d\n", screen->width, screen->height);
 
    /* use custom pageclear, if necessary */
    if (driver->clear)
@@ -409,9 +425,13 @@ static int vid_findmode(int width, int height, viddriver_t *osd_driver)
    else
       bmp_clear(screen, GUI_BLACK);
 
+   log_printf("screen2 : %d x %d\n", screen->width, screen->height);
+
    /* release surface */
    if (driver->free_write)
       driver->free_write(-1, NULL);
+
+   log_printf("screen3 : %d x %d\n", screen->width, screen->height);
 
    log_printf("video driver: %s at %dx%d\n", driver->name,
               screen->width, screen->height);
@@ -422,6 +442,11 @@ static int vid_findmode(int width, int height, viddriver_t *osd_driver)
 /* This is the interface to the drivers, used in nofrendo.c */
 int vid_init(int width, int height, viddriver_t *osd_driver)
 {
+
+   printf("width = %d \n", width);
+   printf("height = %d \n", height);
+   printf("osd_driver->name = %s \n", osd_driver->name);
+
    if (vid_findmode(width, height, osd_driver))
    {
       log_printf("video initialization failed for %s at %dx%d\n",
