@@ -3,4 +3,4 @@ file(GLOB SOURCES *.c)
 idf_component_register(SRCS ${SOURCES}
                        INCLUDE_DIRS "")
 
-target_compile_definitions(${COMPONENT_LIB} PUBLIC "-DLV_LVGL_H_INCLUDE_SIMPLE")
+target_compile_definitions(${COMPONENT_LIB} PUBLIC "-DLV_LVGL_H_INCLUDE_SIMPLE -Wno-implicit-function-declaration")
