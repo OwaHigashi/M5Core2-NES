@@ -69,35 +69,35 @@ typedef struct {
 spi_device_handle_t spi;
 
 DRAM_ATTR static const lcd_init_cmd_t ili_init_cmds[]={
-    {0xEF, {0x03, 0x80, 0x02}, 3},
-    {0xCF, {0x00, 0XC1, 0X30}, 3},
-    {0xED, {0x64, 0x03, 0X12, 0X81}, 4},
-    {0xE8, {0x85, 0x00, 0x78}, 3},
-    {0xCB, {0x39, 0x2C, 0x00, 0x34, 0x02}, 5},
-    {0xF7, {0x20}, 1},
-    {0xEA, {0x00, 0x00}, 2},
-    {0xC0, {0x23}, 1},
-    {0xC1, {0x10}, 1},
-    {0xC5, {0x3e, 0x28}, 2},
-    {0xC7, {0x86}, 1},
+    {0xEF, {0x03, 0x80, 0x02}, 3},              // Unnknown
+    {0xCF, {0x00, 0XC1, 0X30}, 3},              // Power control B register 
+    {0xED, {0x64, 0x03, 0X12, 0X81}, 4},        // Power on sequence register
+    {0xE8, {0x85, 0x00, 0x78}, 3},              // Driver timing control A 
+    {0xCB, {0x39, 0x2C, 0x00, 0x34, 0x02}, 5},  // Power control A register
+    {0xF7, {0x20}, 1},                          // Pump ratio control register
+    {0xEA, {0x00, 0x00}, 2},                    // Driver timing control B
+    {0xC0, {0x23}, 1},                          // Power Control 1 register: VRH [5:0]: Set the GVDD level,
+    {0xC1, {0x10}, 1},                          // Power Control 2 register
+    {0xC5, {0x3e, 0x28}, 2},                    // VCOM Control 1 register
+    {0xC7, {0x86}, 1},                          // VCOM Control 2 register
     // {0x36, {0x48}, 1},
-    {0x36, {0x08}, 1},
-    {0x3A, {0x55}, 1},
+    {0x36, {0x08}, 1},                          // Memory Access Control register:D7=MY,D6=MX,D5=MV,D4=ML,D3=BGR,D2=MH
+    {0x3A, {0x55}, 1},                          // Pixel Format register
     // {0xB1, {0x00, 0x18}, 2},
-    {0xB1, {0x00, 0x1B}, 2},
-    {0xB6, {0x08, 0x82, 0x27}, 3},
-    {0xF2, {0x00}, 1},
-    {0x26, {0x01}, 1},
-    {0xE0, {0x0F,0x31,0x2B,0x0C,0x0E,0x08,0x4E,0xF1,0x37,0x07,0x10,0x03,0x0E,0x09,0x00}, 15},
-    {0XE1, {0x00,0x0E,0x14,0x03,0x11,0x07,0x31,0xC1,0x48,0x08,0x0F,0x0C,0x31,0x36,0x0F}, 15},
+    {0xB1, {0x00, 0x1B}, 2},                    // Frame Rate Control (In Normal Mode)
+    {0xB6, {0x08, 0x82, 0x27}, 3},              // Display Function Control register
+    {0xF2, {0x00}, 1},                          // 3 Gamma enable register
+    {0x26, {0x01}, 1},                          // Gamma register
+    {0xE0, {0x0F,0x31,0x2B,0x0C,0x0E,0x08,0x4E,0xF1,0x37,0x07,0x10,0x03,0x0E,0x09,0x00}, 15},   // Positive Gamma Correction register
+    {0XE1, {0x00,0x0E,0x14,0x03,0x11,0x07,0x31,0xC1,0x48,0x08,0x0F,0x0C,0x31,0x36,0x0F}, 15},   // Negative Gamma Correction register 
 
-    // {0x2A, {0x00, 0x00, 0x00, 0xEF}, 4},
-    // {0x2B, {0x00, 0x00, 0x01, 0x3f}, 4}, 
-    // {0x2C, {0}, 0},
-    // {0xB7, {0x07}, 1},
-    {0x11, {0}, 0x80},
-    {0x29, {0}, 0x80},
-    {0, {0}, 0xff},
+    // {0x2A, {0x00, 0x00, 0x00, 0xEF}, 4},     // Colomn address register
+    // {0x2B, {0x00, 0x00, 0x01, 0x3f}, 4},     // Page address registe 
+    // {0x2C, {0}, 0},                          // GRAM register
+    // {0xB7, {0x07}, 1},                       // Entry Mode Set
+    {0x11, {0}, 0x80},                          // Sleep out register
+    {0x29, {0}, 0x80},                          // Display on register
+    {0, {0}, 0xff},                             // NOP
 };
 
 //Send a command to the LCD. Uses spi_device_transmit, which waits until the transfer is complete.
@@ -279,7 +279,7 @@ void ili9341_write_frame(const uint16_t xs, const uint16_t ys, const uint16_t wi
         while (READ_PERI_REG(SPI_CMD_REG(SPI_NUM))&SPI_USR);
         GPIO.out_w1tc = dc;
         SET_PERI_REG_BITS(SPI_MOSI_DLEN_REG(SPI_NUM), SPI_USR_MOSI_DBITLEN, 7, SPI_USR_MOSI_DBITLEN_S);
-        WRITE_PERI_REG((SPI_W0_REG(SPI_NUM)), 0x2A);
+        WRITE_PERI_REG((SPI_W0_REG(SPI_NUM)), 0x2A); //Colomn address register
         SET_PERI_REG_MASK(SPI_CMD_REG(SPI_NUM), SPI_USR);
         while (READ_PERI_REG(SPI_CMD_REG(SPI_NUM))&SPI_USR);
         GPIO.out_w1ts = dc;
@@ -289,7 +289,7 @@ void ili9341_write_frame(const uint16_t xs, const uint16_t ys, const uint16_t wi
         while (READ_PERI_REG(SPI_CMD_REG(SPI_NUM))&SPI_USR);
         GPIO.out_w1tc = dc;
         SET_PERI_REG_BITS(SPI_MOSI_DLEN_REG(SPI_NUM), SPI_USR_MOSI_DBITLEN, 7, SPI_USR_MOSI_DBITLEN_S);
-        WRITE_PERI_REG((SPI_W0_REG(SPI_NUM)), 0x2B);
+        WRITE_PERI_REG((SPI_W0_REG(SPI_NUM)), 0x2B); // Page address register
         SET_PERI_REG_MASK(SPI_CMD_REG(SPI_NUM), SPI_USR);
         while (READ_PERI_REG(SPI_CMD_REG(SPI_NUM))&SPI_USR);
         GPIO.out_w1ts = dc;
@@ -299,7 +299,7 @@ void ili9341_write_frame(const uint16_t xs, const uint16_t ys, const uint16_t wi
         while (READ_PERI_REG(SPI_CMD_REG(SPI_NUM))&SPI_USR);
         GPIO.out_w1tc = dc;
         SET_PERI_REG_BITS(SPI_MOSI_DLEN_REG(SPI_NUM), SPI_USR_MOSI_DBITLEN, 7, SPI_USR_MOSI_DBITLEN_S);
-        WRITE_PERI_REG((SPI_W0_REG(SPI_NUM)), 0x2C);
+        WRITE_PERI_REG((SPI_W0_REG(SPI_NUM)), 0x2C); // GRAM register
         SET_PERI_REG_MASK(SPI_CMD_REG(SPI_NUM), SPI_USR);
         while (READ_PERI_REG(SPI_CMD_REG(SPI_NUM))&SPI_USR);
         
