@@ -162,8 +162,6 @@ void app_main(void)
 	
 	m5core2_init();
 
-//	lvgl_driver_init();
-
 #if 0
 	lvgl_i2c_locking(i2c_manager_locking());
 
@@ -177,7 +175,9 @@ void app_main(void)
 	printf("Running...\n");
 	fflush(stdout);
 
+#if 1
 	nofrendo_main(0, NULL);
+#endif
 
 	for ( ; ; ) {
 		vTaskDelay(portMAX_DELAY);

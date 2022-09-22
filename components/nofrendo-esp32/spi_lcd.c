@@ -68,6 +68,39 @@ typedef struct {
 
 spi_device_handle_t spi;
 
+#if 1
+DRAM_ATTR static const lcd_init_cmd_t ili_init_cmds[]={
+		{0xCF, {0x00, 0x83, 0X30}, 3}, 						// Power control B register
+		{0xED, {0x64, 0x03, 0X12, 0X81}, 4},				// Power on sequence register 
+		{0xE8, {0x85, 0x01, 0x79}, 3},						// Driver timing control A
+		{0xCB, {0x39, 0x2C, 0x00, 0x34, 0x02}, 5},			// Power control A register
+		{0xF7, {0x20}, 1},									// Pump ratio control register
+		{0xEA, {0x00, 0x00}, 2},							// Driver timing control B
+		{0xC0, {0x26}, 1},         							// Power Control 1 register
+		{0xC1, {0x11}, 1},          						// Power Control 2 register 
+		{0xC5, {0x35, 0x3E}, 2},    						// VCOM Control 1 register
+		{0xC7, {0xBE}, 1},          						// VCOM Control 1 register
+		{0x36, {0x28}, 1},        							// Memory Access Control register
+		{0x3A, {0x55}, 1},									// Pixel Format register 
+		{0xB1, {0x00, 0x1B}, 2},							// Frame Rate Control (In Normal Mode)
+		{0xF2, {0x08}, 1},									// 3 Gamma enable register
+		{0x26, {0x01}, 1},									// Gamma register
+		{0xE0, {0x1F, 0x1A, 0x18, 0x0A, 0x0F, 0x06, 0x45, 0X87, 0x32, 0x0A, 0x07, 0x02, 0x07, 0x05, 0x00}, 15}, // Positive Gamma Correction register
+		{0XE1, {0x00, 0x25, 0x27, 0x05, 0x10, 0x09, 0x3A, 0x78, 0x4D, 0x05, 0x18, 0x0D, 0x38, 0x3A, 0x1F}, 15}, // Negative Gamma Correction register 
+		{0x2A, {0x00, 0x00, 0x00, 0xEF}, 4},				// Colomn address register 
+		{0x2B, {0x00, 0x00, 0x01, 0x3f}, 4},				// Page address register
+		{0x2C, {0}, 0},										// GRAM register
+		{0xB7, {0x07}, 1},									// Entry Mode Set
+		{0xB6, {0x0A, 0x82, 0x27, 0x00}, 4},				// Display Function Control register
+		{0x11, {0}, 0x80},									// Sleep out register
+		{0x29, {0}, 0x80},									// Display on register
+		#if 1
+		{0x2A, {0x00, 0x78, 0x00, 0x87}, 4},     // Colomn address register
+		{0x2B, {0x00, 0xA0, 0x00, 0xAF}, 4},     // Page address registe 
+		#endif
+		{0, {0}, 0xff},
+	};
+#else
 DRAM_ATTR static const lcd_init_cmd_t ili_init_cmds[]={
     {0xEF, {0x03, 0x80, 0x02}, 3},              // Unnknown
     {0xCF, {0x00, 0XC1, 0X30}, 3},              // Power control B register 
@@ -91,14 +124,15 @@ DRAM_ATTR static const lcd_init_cmd_t ili_init_cmds[]={
     {0xE0, {0x0F,0x31,0x2B,0x0C,0x0E,0x08,0x4E,0xF1,0x37,0x07,0x10,0x03,0x0E,0x09,0x00}, 15},   // Positive Gamma Correction register
     {0XE1, {0x00,0x0E,0x14,0x03,0x11,0x07,0x31,0xC1,0x48,0x08,0x0F,0x0C,0x31,0x36,0x0F}, 15},   // Negative Gamma Correction register 
 
-    // {0x2A, {0x00, 0x00, 0x00, 0xEF}, 4},     // Colomn address register
-    // {0x2B, {0x00, 0x00, 0x01, 0x3f}, 4},     // Page address registe 
+    {0x2A, {0x00, 0x67, 0x00, 0x77}, 4},     // Colomn address register
+    {0x2B, {0x00, 0x8f, 0x00, 0x9f}, 4},     // Page address registe 
     // {0x2C, {0}, 0},                          // GRAM register
     // {0xB7, {0x07}, 1},                       // Entry Mode Set
     {0x11, {0}, 0x80},                          // Sleep out register
     {0x29, {0}, 0x80},                          // Display on register
     {0, {0}, 0xff},                             // NOP
 };
+#endif
 
 //Send a command to the LCD. Uses spi_device_transmit, which waits until the transfer is complete.
 void lcd_cmd(spi_device_handle_t spi, const uint8_t cmd) 
@@ -127,7 +161,7 @@ void lcd_data(spi_device_handle_t spi, const uint8_t *data, int len)
     assert(ret==ESP_OK);            //Should have had no issues.
 }
 //------
-
+uint8_t test_bmp[16][16 * 2];
 //Initialize the display
 void lcd_init(spi_device_handle_t spi) 
 {
@@ -177,6 +211,23 @@ void lcd_init(spi_device_handle_t spi)
 //    if(lcd_version) lcd_cmd(spi, 0x21);
     ///Enable backlight
     // gpio_set_level(PIN_NUM_BCKL, 1);
+
+	uint8_t data[] = {0x08, 0x88, 0x28, 0xE8};
+    lcd_cmd(spi, 0x36);
+    lcd_data(spi, (void *) &data[0], 1);
+
+    lcd_cmd(spi, 0x21);
+
+	for(int y = 0; y < 16; y++) {
+		for(int x = 0; x < 16; x++) {
+			test_bmp[y][x * 2] 		= 0x00; // BBBB BGGG 
+			test_bmp[y][x * 2 + 1] 	= 0x1F; // GGGR RRRR
+		}
+	} 
+
+    lcd_cmd(spi, 0x2C);
+    lcd_data(spi, test_bmp, 512);
+
 }
 
 void lcd_spi_pre_transfer_callback(spi_transaction_t *t) 
@@ -216,7 +267,7 @@ void ili9341_spi_init()
     // assert(ret==ESP_OK);
 
     //Initialize the LCD
-    lcd_init(spi);
+//   lcd_init(spi);
 }
 //------
 
@@ -261,7 +312,30 @@ void lcd_setBrightness(int duty) {
 
 extern uint16_t myPalette[];
 
-void ili9341_write_frame(const uint16_t xs, const uint16_t ys, const uint16_t width, const uint16_t height, const uint8_t * data[]){
+extern void ili9341_init(void);
+extern void ili9341_flush2(const uint16_t xs, const uint16_t ys, const uint16_t width, const uint16_t height, const uint8_t * data[]);
+
+extern uint16_t nes_xs = 0;
+extern uint16_t nes_ys = 0; 
+extern uint16_t nes_width = 0;
+extern uint16_t nes_height = 0;
+extern void* nes_data = NULL;
+
+
+void ili9341_write_frame(const uint16_t xs, const uint16_t ys, const uint16_t width, const uint16_t height, const uint8_t * data[])
+{
+#if 1
+    nes_xs = xs;
+    nes_ys = ys;
+    nes_width = width;
+    nes_height = height;
+    nes_data = (void*)data;
+
+//   ESP_LOGI("nes", "ili9341_write_frame() %p ", nes_data);
+
+//    ili9341_flush2(xs, ys, width, height, data);
+
+#else
     int x, y;
     int i;
     uint16_t x1, y1;
@@ -325,11 +399,14 @@ void ili9341_write_frame(const uint16_t xs, const uint16_t ys, const uint16_t wi
         }
     }
     while (READ_PERI_REG(SPI_CMD_REG(SPI_NUM))&SPI_USR);
+#endif
 }
 
 void ili9341_nes_init()
 {
+#if 1
     ESP_LOGI("nes", "ili9341_nes_init()");
     ili9341_spi_init();
 //    lcd_setBrightness(800);
+#endif
 }
