@@ -162,11 +162,53 @@ void psxcontrollerInit() {
 #define KEY_SELECT     0X40
 #define KEY_START      0X80
 
+extern void ft6x06_init(uint16_t dev_addr);
+extern bool ft6x36_direct_read(int16_t* x, int16_t* y, uint8_t* state);
 
 int psxReadInput() {
+
 	static uint16_t pre_retval = 0;
 	uint16_t retval = 0;
 	uint8_t key_value = 0xff;
+	int16_t	x = 0;
+	int16_t	y = 0;
+	uint8_t	state = 0;
+
+	ft6x36_direct_read(&x, &y, &state);
+	if(state == 1) {
+		if (x < 100 && y < 90)	{
+			retval =  1 << bit_joypad1_up;
+		}
+		else if (x >= 100 && x < 200 && y < 90) {
+			retval =  1 << bit_joypad1_down;
+		}
+		else if (x >= 200 && y < 90) {
+			retval =  1 << bit_joypad1_a;
+		}
+		else if (x < 100 && y >= 90 && y < 180)	{
+			retval = 1<<bit_joypad1_left;
+		}	
+		else if (x >= 100 && x < 200 && y >= 90 && y < 180)	{
+			retval = 1<<bit_joypad1_right;
+		}	
+		else if (x >= 200 && y >= 90 && y < 180) {
+			retval =  1 << bit_joypad1_b;
+		}	
+		else if (x < 100 && y >= 180) {
+			retval =  1 << bit_joypad1_select;
+		}	
+		else if (x >= 100 && x < 200 && y >= 180) {
+			retval =  1 << bit_joypad1_start;
+		}	
+		else if (x >= 200 && y >= 180) {
+		}	
+	}
+	else {
+		retval = 0;
+	}
+
+	pre_retval = retval;
+	return (int)retval;
 
 	#if 0 // TODO ENABLE 
 
@@ -224,16 +266,20 @@ int psxReadInput() {
 	} else {
 		retval = pre_retval;
 	}
+//	pre_retval = retval;
+	return (int)retval;
+
 	#endif
 
-	pre_retval = retval;
-	return (int)retval;
 }
 
 
 void psxcontrollerInit() {
 	printf("PSX controller disabled in menuconfig; no input enabled.\n");
 	
+	ft6x06_init(0x38);
+
+
 //	gpio_set_direction(5, GPIO_MODE_INPUT);
 //	gpio_pullup_en(5);
 

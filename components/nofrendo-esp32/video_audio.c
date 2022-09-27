@@ -284,19 +284,25 @@ void osd_getinput(void)
 		};
 	static int oldb=0xffff;
 	int b=psxReadInput();
-	int chg=b^oldb;
+//	int chg=b^oldb;
+	int chg=0x6fff;
 	int x;
 	oldb=b;
 	event_t evh;
-	// printf("Input: %x\n", b);
+//	printf("Input: %x\n", b);
 	for (x=0; x<16; x++) {
 		if (chg&1) {
 			evh=event_get(ev[x]);
-			if (evh) evh((b&1)?INP_STATE_BREAK:INP_STATE_MAKE);
+			if (evh) {
+//				printf("%x ", b & 1);
+//				evh((b&1)?INP_STATE_BREAK:INP_STATE_MAKE);
+				evh((b&1)?INP_STATE_MAKE:INP_STATE_BREAK);
+			}
 		}
 		chg>>=1;
 		b>>=1;
 	}
+//	printf("\n");
 }
 
 static void osd_freeinput(void)

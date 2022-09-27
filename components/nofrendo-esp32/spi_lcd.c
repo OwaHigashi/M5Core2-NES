@@ -172,7 +172,11 @@ void lcd_init(spi_device_handle_t spi)
 //    bool lcd_version = gpio_get_level(PIN_NUM_RST);
 
     //Initialize non-SPI GPIOs
-    gpio_set_direction(PIN_NUM_DC, GPIO_MODE_OUTPUT);
+    gpio_pad_select_gpio(PIN_NUM_DC);
+	gpio_set_direction(PIN_NUM_DC, GPIO_MODE_OUTPUT);
+
+
+//    gpio_set_direction(PIN_NUM_DC, GPIO_MODE_OUTPUT);
 //    gpio_set_direction(PIN_NUM_RST, GPIO_MODE_OUTPUT);
     // gpio_set_direction(PIN_NUM_BCKL, GPIO_MODE_OUTPUT);
     
@@ -228,6 +232,8 @@ void lcd_init(spi_device_handle_t spi)
     lcd_cmd(spi, 0x2C);
     lcd_data(spi, test_bmp, 512);
 
+    ESP_LOGI("nes", "lcd_init() done");
+
 }
 
 void lcd_spi_pre_transfer_callback(spi_transaction_t *t) 
@@ -267,7 +273,7 @@ void ili9341_spi_init()
     // assert(ret==ESP_OK);
 
     //Initialize the LCD
-//   lcd_init(spi);
+   lcd_init(spi);
 }
 //------
 
@@ -324,7 +330,7 @@ extern void* nes_data = NULL;
 
 void ili9341_write_frame(const uint16_t xs, const uint16_t ys, const uint16_t width, const uint16_t height, const uint8_t * data[])
 {
-#if 1
+#if 0
     nes_xs = xs;
     nes_ys = ys;
     nes_width = width;
