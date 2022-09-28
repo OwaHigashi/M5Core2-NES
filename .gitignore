@@ -2,7 +2,6 @@
 /build/
 /config/
 /.vscode/
-/sdkconfig
 /sdkconfig.old
 /sdkconfig.ci
 Makefile

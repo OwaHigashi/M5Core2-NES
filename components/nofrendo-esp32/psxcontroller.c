@@ -163,51 +163,50 @@ void psxcontrollerInit() {
 #define KEY_START      0X80
 
 extern void ft6x06_init(uint16_t dev_addr);
-extern bool ft6x36_direct_read(int16_t* x, int16_t* y, uint8_t* state);
+extern bool ft6x36_direct_read(int16_t* x1, int16_t* y1, int16_t* x2, int16_t* y2, uint8_t* count);
 
 int psxReadInput() {
 
 	static uint16_t pre_retval = 0;
 	uint16_t retval = 0;
 	uint8_t key_value = 0xff;
-	int16_t	x = 0;
-	int16_t	y = 0;
-	uint8_t	state = 0;
+	int16_t	x[2] = {0 ,0};
+	int16_t	y[2] = {0, 0};
+	uint8_t	count = 0;
 
-	ft6x36_direct_read(&x, &y, &state);
-	if(state == 1) {
-		if (x < 100 && y < 90)	{
-			retval =  1 << bit_joypad1_up;
+	ft6x36_direct_read(&x[0], &y[0], &x[1], &y[1], &count);
+
+	if(count > 2) return 0;
+
+	for(int i = 0; i < count; i++) {
+		if (x[i] < 100 && y[i] < 90)	{
+			retval |=  1 << bit_joypad1_up;
 		}
-		else if (x >= 100 && x < 200 && y < 90) {
-			retval =  1 << bit_joypad1_down;
+		else if (x[i] >= 100 && x[i] < 200 && y[i] < 90) {
+			retval |=  1 << bit_joypad1_down;
 		}
-		else if (x >= 200 && y < 90) {
-			retval =  1 << bit_joypad1_a;
+		else if (x[i] >= 200 && y[i] < 90) {
+			retval |=  1 << bit_joypad1_a;
 		}
-		else if (x < 100 && y >= 90 && y < 180)	{
-			retval = 1<<bit_joypad1_left;
+		else if (x[i] < 100 && y[i] >= 90 && y[i] < 180)	{
+			retval |= 1 << bit_joypad1_left;
 		}	
-		else if (x >= 100 && x < 200 && y >= 90 && y < 180)	{
-			retval = 1<<bit_joypad1_right;
+		else if (x[i] >= 100 && x[i] < 200 && y[i] >= 90 && y[i] < 180)	{
+			retval |= 1 << bit_joypad1_right;
 		}	
-		else if (x >= 200 && y >= 90 && y < 180) {
-			retval =  1 << bit_joypad1_b;
+		else if (x[i] >= 200 && y[i] >= 90 && y[i] < 180) {
+			retval |=  1 << bit_joypad1_b;
 		}	
-		else if (x < 100 && y >= 180) {
-			retval =  1 << bit_joypad1_select;
+		else if (x[i] < 100 && y[i] >= 180) {
+			retval |=  1 << bit_joypad1_select;
 		}	
-		else if (x >= 100 && x < 200 && y >= 180) {
-			retval =  1 << bit_joypad1_start;
+		else if (x[i] >= 100 && x[i] < 200 && y[i] >= 180) {
+			retval |=  1 << bit_joypad1_start;
 		}	
-		else if (x >= 200 && y >= 180) {
+		else if (x[i] >= 200 && y[i] >= 180) {
 		}	
 	}
-	else {
-		retval = 0;
-	}
 
-	pre_retval = retval;
 	return (int)retval;
 
 	#if 0 // TODO ENABLE 
