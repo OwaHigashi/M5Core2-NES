@@ -55,7 +55,8 @@ TimerHandle_t timer;
 int osd_installtimer(int frequency, void *func, int funcsize, void *counter, int countersize)
 {
 	printf("Timer install, freq=%d\n", frequency);
-	timer=xTimerCreate("nes",configTICK_RATE_HZ/frequency, pdTRUE, NULL, func);
+//	timer=xTimerCreate("nes",configTICK_RATE_HZ/frequency, pdTRUE, NULL, func);
+	timer=xTimerCreate("nes",(configTICK_RATE_HZ/frequency) * 2, pdTRUE, NULL, func);
 	xTimerStart(timer, 0);
    return 0;
 }
@@ -77,15 +78,19 @@ static void do_audio_frame() {
 	int left=DEFAULT_SAMPLERATE/NES_REFRESH_RATE;
 	while(left) {
 		int n=DEFAULT_FRAGSIZE;
+		size_t bytes_written;
 		if (n>left) n=left;
 		audio_callback(audio_frame, n); //get more data
 		//16 bit mono -> 32-bit (16 bit r+l)
 		for (int i=n-1; i>=0; i--) {
-			audio_frame[i] = audio_frame[i] + 0x8000;
+//			audio_frame[i] = audio_frame[i] + 0x8000;
+			audio_frame[i] = audio_frame[i] / 5;
 			// audio_frame[i*2+1] = audio_frame[i] + 0x8000;
 			// audio_frame[i*2] = audio_frame[i] + 0x8000;
 		}
-		i2s_write_bytes(0, (const char *)audio_frame, 2*n, portMAX_DELAY);
+//		i2s_write_bytes(0, (const char *)audio_frame, 2*n, portMAX_DELAY);
+		i2s_write(I2S_NUM_0, (const char *)audio_frame, 2 * n, &bytes_written, portMAX_DELAY);
+//		ESP_LOGI("nes", "i2s write(%d)", bytes_written);
 		left-=n;
 	}
 #endif
@@ -102,32 +107,48 @@ static void osd_stopsound(void)
    audio_callback = NULL;
 }
 
+extern esp_err_t m5core2_speaker(bool on);
 
 static int osd_init_sound(void)
 {
 #if CONFIG_SOUND_ENA
 	audio_frame = malloc(2 * DEFAULT_FRAGSIZE);
 	i2s_config_t cfg = {
-		.mode = I2S_MODE_DAC_BUILT_IN | I2S_MODE_TX | I2S_MODE_MASTER,
+//		.mode = I2S_MODE_DAC_BUILT_IN | I2S_MODE_TX | I2S_MODE_MASTER,
+		.mode = I2S_MODE_TX | I2S_MODE_MASTER,
 		.sample_rate = DEFAULT_SAMPLERATE,
 		.bits_per_sample = I2S_BITS_PER_SAMPLE_16BIT,
 		.channel_format = I2S_CHANNEL_FMT_ONLY_RIGHT,
-		.communication_format = I2S_COMM_FORMAT_I2S_MSB,
+//		.channel_format = I2S_CHANNEL_FMT_RIGHT_LEFT,
+//		.communication_format = I2S_COMM_FORMAT_I2S_MSB,
+		.communication_format = I2S_COMM_FORMAT_STAND_I2S,
 		.intr_alloc_flags = 0,
 		.dma_buf_count = 2,
 		.dma_buf_len = 512
 	};
-	i2s_driver_install(0, &cfg, 2, &queue);
-	i2s_set_pin(0, NULL);
+
+	i2s_pin_config_t pin_cfg = {
+        .bck_io_num = GPIO_NUM_12,
+        .ws_io_num = GPIO_NUM_0,
+        .data_out_num = GPIO_NUM_2
+//      .data_in_num = GPIO_NUM_34
+	};
+
+//	i2s_driver_install(0, &cfg, 2, &queue);
+	i2s_driver_install(I2S_NUM_0, &cfg, 2, &queue);
+
+
+//	i2s_set_pin(0, NULL);
+	i2s_set_pin(I2S_NUM_0, &pin_cfg);
 	// i2s_set_dac_mode(I2S_DAC_CHANNEL_LEFT_EN); 
-	i2s_set_dac_mode(I2S_DAC_CHANNEL_RIGHT_EN); 
+	// i2s_set_dac_mode(I2S_DAC_CHANNEL_RIGHT_EN); 
 
 	//I2S enables *both* DAC channels; we only need DAC1.
 	//ToDo: still needed now I2S supports set_dac_mode?
 	// CLEAR_PERI_REG_MASK(RTC_IO_PAD_DAC2_REG, RTC_IO_PDAC2_DAC_XPD_FORCE_M);
 	// CLEAR_PERI_REG_MASK(RTC_IO_PAD_DAC2_REG, RTC_IO_PDAC2_XPD_DAC_M);
 #endif
-
+//	m5core2_speaker(true);
 	audio_callback = NULL;
 
 	return 0;

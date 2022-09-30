@@ -164,10 +164,12 @@ void psxcontrollerInit() {
 
 extern void ft6x06_init(uint16_t dev_addr);
 extern bool ft6x36_direct_read(int16_t* x1, int16_t* y1, int16_t* x2, int16_t* y2, uint8_t* count);
+extern esp_err_t m5core2_speaker(bool on);
 
 int psxReadInput() {
 
 	static uint16_t pre_retval = 0;
+	static bool speaker_on = false;
 	uint16_t retval = 0;
 	uint8_t key_value = 0xff;
 	int16_t	x[2] = {0 ,0};
@@ -204,6 +206,8 @@ int psxReadInput() {
 			retval |=  1 << bit_joypad1_start;
 		}	
 		else if (x[i] >= 200 && y[i] >= 180) {
+			speaker_on = !speaker_on;
+			m5core2_speaker(speaker_on);
 		}	
 	}
 
