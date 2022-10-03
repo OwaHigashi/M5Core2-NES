@@ -83,14 +83,9 @@ static void do_audio_frame() {
 		audio_callback(audio_frame, n); //get more data
 		//16 bit mono -> 32-bit (16 bit r+l)
 		for (int i=n-1; i>=0; i--) {
-//			audio_frame[i] = audio_frame[i] + 0x8000;
 			audio_frame[i] = audio_frame[i] / 5;
-			// audio_frame[i*2+1] = audio_frame[i] + 0x8000;
-			// audio_frame[i*2] = audio_frame[i] + 0x8000;
 		}
-//		i2s_write_bytes(0, (const char *)audio_frame, 2*n, portMAX_DELAY);
 		i2s_write(I2S_NUM_0, (const char *)audio_frame, 2 * n, &bytes_written, portMAX_DELAY);
-//		ESP_LOGI("nes", "i2s write(%d)", bytes_written);
 		left-=n;
 	}
 #endif
@@ -114,13 +109,10 @@ static int osd_init_sound(void)
 #if CONFIG_SOUND_ENA
 	audio_frame = malloc(2 * DEFAULT_FRAGSIZE);
 	i2s_config_t cfg = {
-//		.mode = I2S_MODE_DAC_BUILT_IN | I2S_MODE_TX | I2S_MODE_MASTER,
 		.mode = I2S_MODE_TX | I2S_MODE_MASTER,
 		.sample_rate = DEFAULT_SAMPLERATE,
 		.bits_per_sample = I2S_BITS_PER_SAMPLE_16BIT,
 		.channel_format = I2S_CHANNEL_FMT_ONLY_RIGHT,
-//		.channel_format = I2S_CHANNEL_FMT_RIGHT_LEFT,
-//		.communication_format = I2S_COMM_FORMAT_I2S_MSB,
 		.communication_format = I2S_COMM_FORMAT_STAND_I2S,
 		.intr_alloc_flags = 0,
 		.dma_buf_count = 2,
@@ -131,24 +123,13 @@ static int osd_init_sound(void)
         .bck_io_num = GPIO_NUM_12,
         .ws_io_num = GPIO_NUM_0,
         .data_out_num = GPIO_NUM_2
-//      .data_in_num = GPIO_NUM_34
 	};
 
-//	i2s_driver_install(0, &cfg, 2, &queue);
 	i2s_driver_install(I2S_NUM_0, &cfg, 2, &queue);
 
-
-//	i2s_set_pin(0, NULL);
 	i2s_set_pin(I2S_NUM_0, &pin_cfg);
-	// i2s_set_dac_mode(I2S_DAC_CHANNEL_LEFT_EN); 
-	// i2s_set_dac_mode(I2S_DAC_CHANNEL_RIGHT_EN); 
 
-	//I2S enables *both* DAC channels; we only need DAC1.
-	//ToDo: still needed now I2S supports set_dac_mode?
-	// CLEAR_PERI_REG_MASK(RTC_IO_PAD_DAC2_REG, RTC_IO_PDAC2_DAC_XPD_FORCE_M);
-	// CLEAR_PERI_REG_MASK(RTC_IO_PAD_DAC2_REG, RTC_IO_PDAC2_XPD_DAC_M);
 #endif
-//	m5core2_speaker(true);
 	audio_callback = NULL;
 
 	return 0;
@@ -305,25 +286,20 @@ void osd_getinput(void)
 		};
 	static int oldb=0xffff;
 	int b=psxReadInput();
-//	int chg=b^oldb;
 	int chg=0x6fff;
 	int x;
 	oldb=b;
 	event_t evh;
-//	printf("Input: %x\n", b);
 	for (x=0; x<16; x++) {
 		if (chg&1) {
 			evh=event_get(ev[x]);
 			if (evh) {
-//				printf("%x ", b & 1);
-//				evh((b&1)?INP_STATE_BREAK:INP_STATE_MAKE);
 				evh((b&1)?INP_STATE_MAKE:INP_STATE_BREAK);
 			}
 		}
 		chg>>=1;
 		b>>=1;
 	}
-//	printf("\n");
 }
 
 static void osd_freeinput(void)
