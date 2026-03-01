@@ -1,8 +1,22 @@
-
+# Build artifacts
 /build/
 /config/
-/.vscode/
-/sdkconfig.old
-/sdkconfig.ci
+sdkconfig
+sdkconfig.old
+sdkconfig.ci
+
+# ESP-IDF build files (not needed for Arduino CLI build)
+/main/
+/components/
+CMakeLists.txt
 Makefile
+flash.sh
+.gitmodules
+
+# ROM files
+*.nes
+
+# IDE / tools
+/.vscode/
 .DS_Store
+.claude/

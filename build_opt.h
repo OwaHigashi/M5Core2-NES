@@ -1,0 +1,7 @@
+-IC:/Users/west/M5/M5Core2-NES/src/nofrendo
+-IC:/Users/west/M5/M5Core2-NES/src/nofrendo/cpu
+-IC:/Users/west/M5/M5Core2-NES/src/nofrendo/nes
+-IC:/Users/west/M5/M5Core2-NES/src/nofrendo/sndhrdw
+-IC:/Users/west/M5/M5Core2-NES/src/nofrendo/libsnss
+-IC:/Users/west/M5/M5Core2-NES/src/nofrendo/mappers
+-IC:/Users/west/M5/M5Core2-NES/src/nofrendo-esp32
